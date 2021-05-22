@@ -7,6 +7,7 @@
     "@testing-library/react": "^11.2.5",
     "@testing-library/user-event": "^12.6.3",
     "express": "^4.17.1",
+    "mongoose": "^5.12.4",
     "package.json": "^2.0.1",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
@@ -14,7 +15,8 @@
     "web-vitals": "^1.1.0"
   },
   "scripts": {
-    "start": "nodemon app.js",
+    "start": "node app.js",
+    "dev": "nodemon app.js",
     "lint": "npx eslint ."
   },
   "eslintConfig": {

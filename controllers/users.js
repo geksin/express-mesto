@@ -43,6 +43,9 @@ module.exports.findUser = (req, res) => {
     });
 };
 
+// не понимаю в чем ошибка, фронт передает в любом случае два поля, даже если одно не поменяли,
+// если передать одно поле будет ошибка.
+
 module.exports.updateProfile = (req, res) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about },

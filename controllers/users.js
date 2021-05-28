@@ -47,8 +47,8 @@ module.exports.findUser = (req, res) => {
 // если передать одно поле будет ошибка.
 
 module.exports.updateProfile = (req, res) => {
-  const { name, about } = req.body;
-  User.findByIdAndUpdate(req.user._id, { name, about },
+  // const body = req.body;
+  User.findByIdAndUpdate(req.user._id, req.body,
     {
       new: true,
       runValidators: true,

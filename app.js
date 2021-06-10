@@ -2,6 +2,12 @@ const express = require('express');
 const path = require('path');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const auth = require('./middlewares/auth');
+
+const {
+  createUser, login,
+} = require('./controllers/users');
+
 
 const { PORT = 3000, BASE_PATH } = process.env;
 const app = express();
@@ -27,8 +33,12 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/users', require('./routes/users'));
+app.post('/signin', login);
+app.post('/signup', createUser);
 
+app.use(auth);
+
+app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
 
 app.use(express.static(path.join(__dirname, 'public')));

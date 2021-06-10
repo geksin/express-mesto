@@ -1,7 +1,12 @@
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
 const ERROR_CODE_400 = 400;
 const ERROR_CODE_404 = 404;
+const JWT_SECRET = 'jdsg776599jngmmjhdg';
+
+
 
 const errorsMessagee = {
   400: 'Переданы некорректные данные при создании пользователя',
@@ -20,15 +25,40 @@ module.exports.getUsers = (req, res) => {
     });
 };
 
-module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
+module.exports.getMe = (req, res) => {
+  console.log(req.user.id);
+  User.findOne(req.user.id)
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') return res.status(ERROR_CODE_400).send({ message: errorsMessagee[400] });
       if (err.name === 'CastError') return res.status(ERROR_CODE_404).send({ message: errorsMessagee[404] });
       res.status(500).send({ message: 'Произошла ошибка' });
     });
+};
+
+module.exports.createUser = (req, res) => {
+  const {
+    name, about, avatar, password, email,
+  } = req.body;
+  if (!email || !password) {
+    return res.status(400).send({ message: 'not all sent' });
+  }
+
+  return bcrypt.hash(password, 8, (err, hash) => User.findOne({ email })
+    .then((user) => {
+      if (user) {
+        res.status(409).send({ message: 'Пользователь c такой почтой уже существует' });
+      }
+      return User.create({
+        name, about, avatar, password: hash, email,
+      })
+        .then((user) => res.status(200).send({ data: user }));
+    })
+    .catch((err) => {
+      if (err.name === 'ValidationError') return res.status(ERROR_CODE_400).send({ message: errorsMessagee[400] });
+      if (err.name === 'CastError') return res.status(ERROR_CODE_404).send({ message: errorsMessagee[404] });
+      res.status(500).send({ message: 'Произошла ошибка' });
+    }));
 };
 
 module.exports.findUser = (req, res) => {
@@ -42,9 +72,6 @@ module.exports.findUser = (req, res) => {
       res.status(500).send({ message: 'Произошла ошибка' });
     });
 };
-
-// не понимаю в чем ошибка, фронт передает в любом случае два поля, даже если одно не поменяли,
-// если передать одно поле будет ошибка.
 
 module.exports.updateProfile = (req, res) => {
   // const body = req.body;
@@ -76,5 +103,28 @@ module.exports.updateAvatar = (req, res) => {
       if (err.name === 'ValidationError') return res.status(ERROR_CODE_400).send({ message: errorsMessagee['400ava'] });
       if (err.name === 'CastError') return res.status(ERROR_CODE_404).send({ message: errorsMessagee[404] });
       res.status(500).send({ message: 'Произошла ошибка' });
+    });
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).send({ message: 'not all sent' });
+  }
+
+  return User.findOne({ email })
+    .then((user) => {
+      if (!user) {
+        return res.status(403).send({ message: 'not found' });
+      }
+      bcrypt.compare(password, user.password, (err, isValid) => {
+        if (!isValid) {
+          return res.status(401).send({ message: 'no valid' });
+        }
+
+        const token = jwt.sign({ id: user.id, email }, JWT_SECRET, { expiresIn: '7d' });
+
+        return res.status(200).send(token);
+      });
     });
 };

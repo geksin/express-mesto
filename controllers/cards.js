@@ -1,65 +1,88 @@
 const Card = require('../models/card');
-
-const ERROR_CODE_400 = 400;
-const ERROR_CODE_404 = 404;
+const NotFoundError = require('../errors/errors');
+const RequestError = require('../errors/errors');
 
 const errorsMessagee = {
   400: 'Переданы некорректные данные при создании карточки',
   404: 'карточка или пользователь не найден',
   '400likes': 'Переданы некорректные данные для постановки/снятии лайка',
   '404del': 'Карточка с указанным _id не найдена',
+  '403del': 'Карточку может удалить только создатель',
 };
 
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send({ data: cards }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch(next);
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
-  const owner = req.user._id;
+  const owner = req.user.id;
   Card.create({ name, link, owner })
-    .then((card) => res.send({ data: card }))
+    .then((card) => {
+      res.send({ data: card });
+    })
     .catch((err) => {
-      if (err.name === 'ValidationError') return res.status(ERROR_CODE_400).send({ message: errorsMessagee[400] });
-      res.status(500).send({ message: 'Произошла ошибка' });
+      if (err.name === 'ValidationError') {
+        next(new NotFoundError(errorsMessagee[400]));
+      }
+      next(err);
     });
 };
 
-module.exports.deleteCard = (req, res) => {
-  const { cardId } = req.params;
-  Card.findByIdAndRemove(cardId)
-    .then((cards) => res.send({ data: cards }))
+module.exports.deleteCard = (req, res, next) => {
+  Card.findById(req.params.cardId)
+    .then((card) => {
+      if (card == null) {
+        next(new NotFoundError(errorsMessagee['404del']));
+      }
+      if (card.owner == req.user.id) {
+        Card.findByIdAndRemove(card._id)
+          .then((cards) => res.send(cards));
+      } else {
+        next(new RequestError(errorsMessagee['403del']));
+      }
+    })
     .catch((err) => {
-      if (err.name === 'CastError') return res.status(ERROR_CODE_404).send({ message: errorsMessagee['404del'] });
-      res.status(500).send(err);
+      if (err.name === 'CastError') {
+        next(new NotFoundError(errorsMessagee['404del']));
+      }
+      next(err);
     });
 };
 
-module.exports.likeCard = (req, res) => { // http://localhost:3000/cards/60a7f325708ab64d91ef48ad/likes
+module.exports.likeCard = (req, res, next) => { // http://localhost:3000/cards/60a7f325708ab64d91ef48ad/likes
   Card.findByIdAndUpdate(req.params.cardId,
-    { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
+    { $addToSet: { likes: req.user.id } }, // добавить _id в массив, если его там нет
     { new: true })
     .then((cards) => {
-      if (cards === null) return res.status(ERROR_CODE_400).send({ message: errorsMessagee['400likes'] });
+      if (cards === null) {
+        next(new RequestError(errorsMessagee['400likes']));
+      }
       res.send({ data: cards });
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') return res.status(ERROR_CODE_400).send({ message: errorsMessagee['400likes'] });
-      res.status(500).send(err);
+      if (err.name === 'ValidationError') {
+        next(new RequestError(errorsMessagee['400likes']));
+      }
+      next(err);
     });
 };
 
-module.exports.dislikeCard = (req, res) => Card.findByIdAndUpdate(
+module.exports.dislikeCard = (req, res, next) => Card.findByIdAndUpdate(
   req.params.cardId,
-  { $pull: { likes: req.user._id } }, // убрать _id из массива
+  { $pull: { likes: req.user.id } }, // убрать _id из массива
   { new: true },
 ).then((cards) => {
-  if (cards === null) return res.status(ERROR_CODE_400).send({ message: errorsMessagee['400likes'] });
+  if (cards === null) {
+    next(new RequestError(errorsMessagee['400likes']));
+  }
   res.send({ data: cards });
 })
   .catch((err) => {
-    if (err.name === 'ValidationError') return res.status(ERROR_CODE_400).send({ message: errorsMessagee['400likes'] });
-    res.status(500).send(err);
+    if (err.name === 'ValidationError') {
+      next(new RequestError(errorsMessagee['400likes']));
+    }
+    next(err);
   });

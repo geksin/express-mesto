@@ -2,79 +2,98 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
-const ERROR_CODE_400 = 400;
-const ERROR_CODE_404 = 404;
+const NotFoundError = require('../errors/errors');
+const RequestError = require('../errors/errors');
+const AutorizationError = require('../errors/errors');
+const AlreadyHaveError = require('../errors/errors');
+
 const JWT_SECRET = 'jdsg776599jngmmjhdg';
-
-
 
 const errorsMessagee = {
   400: 'Переданы некорректные данные при создании пользователя',
+  '400login': 'Не заполнены все поля',
   '400user': 'Переданы некорректные данные при обновлении профиля',
   '400ava': 'Переданы некорректные данные при обновлении аватара',
+  401: 'Логин или пароль не правильные',
   404: 'Пользователь по указанному _id не найден',
+  '404email': 'Пользователь с такой почтой не найден',
+  409: 'Пользователь c такой почтой уже существует',
 };
 
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((users) => res.send({ data: users }))
     .catch((err) => {
-      if (err.name === 'ValidationError') return res.status(ERROR_CODE_400).send({ message: errorsMessagee[400] });
-      if (err.name === 'CastError') return res.status(ERROR_CODE_404).send({ message: errorsMessagee[404] });
-      res.status(500).send({ message: 'Произошла ошибка' });
+      if (err.name === 'ValidationError') {
+        next(new RequestError(errorsMessagee[400]));
+      }
+      if (err.name === 'CastError') {
+        next(new NotFoundError(errorsMessagee[404]));
+      }
+      next(err);
     });
 };
 
-module.exports.getMe = (req, res) => {
-  console.log(req.user.id);
-  User.findOne(req.user.id)
-    .then((user) => res.send({ data: user }))
+module.exports.getMe = (req, res, next) => {
+  const userid = req.user.id;
+  User.findById(userid)
+    .then((user) => res.send(user))
     .catch((err) => {
-      if (err.name === 'ValidationError') return res.status(ERROR_CODE_400).send({ message: errorsMessagee[400] });
-      if (err.name === 'CastError') return res.status(ERROR_CODE_404).send({ message: errorsMessagee[404] });
-      res.status(500).send({ message: 'Произошла ошибка' });
+      if (err.name === 'ValidationError') {
+        next(new RequestError(errorsMessagee[400]));
+      }
+      if (err.name === 'CastError') {
+        next(new NotFoundError(errorsMessagee[404]));
+      }
+      next(err);
     });
 };
 
-module.exports.createUser = (req, res) => {
+module.exports.createUser = (req, res, next) => {
   const {
     name, about, avatar, password, email,
   } = req.body;
   if (!email || !password) {
-    return res.status(400).send({ message: 'not all sent' });
+    next(new RequestError(errorsMessagee[400]));
   }
-
   return bcrypt.hash(password, 8, (err, hash) => User.findOne({ email })
     .then((user) => {
       if (user) {
-        res.status(409).send({ message: 'Пользователь c такой почтой уже существует' });
+        next(new AlreadyHaveError(errorsMessagee[409]));
       }
       return User.create({
         name, about, avatar, password: hash, email,
       })
-        .then((user) => res.status(200).send({ data: user }));
+        .then((newuser) => res.status(200).send({ data: newuser }));
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') return res.status(ERROR_CODE_400).send({ message: errorsMessagee[400] });
-      if (err.name === 'CastError') return res.status(ERROR_CODE_404).send({ message: errorsMessagee[404] });
-      res.status(500).send({ message: 'Произошла ошибка' });
+      if (err.name === 'ValidationError') {
+        next(new RequestError(errorsMessagee[400]));
+      }
+      if (err.name === 'CastError') {
+        next(new NotFoundError(errorsMessagee[404]));
+      }
+      next(err);
     }));
 };
 
-module.exports.findUser = (req, res) => {
+module.exports.findUser = (req, res, next) => {
   User.findById(req.params.userId)
     .then((user) => {
       res.send(user);
     })
     .catch((err) => {
-      if (err.name === 'ValidationError') return res.status(ERROR_CODE_400).send({ message: errorsMessagee[400] });
-      if (err.name === 'CastError') return res.status(ERROR_CODE_404).send({ message: errorsMessagee[404] });
-      res.status(500).send({ message: 'Произошла ошибка' });
+      if (err.name === 'ValidationError') {
+        next(new RequestError(errorsMessagee[400]));
+      }
+      if (err.name === 'CastError') {
+        next(new NotFoundError(errorsMessagee[404]));
+      }
+      next(err);
     });
 };
 
-module.exports.updateProfile = (req, res) => {
-  // const body = req.body;
+module.exports.updateProfile = (req, res, next) => {
   User.findByIdAndUpdate(req.user._id, req.body,
     {
       new: true,
@@ -83,13 +102,17 @@ module.exports.updateProfile = (req, res) => {
     })
     .then((users) => res.send({ data: users }))
     .catch((err) => {
-      if (err.name === 'ValidationError') return res.status(ERROR_CODE_400).send({ message: errorsMessagee['400user'] });
-      if (err.name === 'CastError') return res.status(ERROR_CODE_404).send({ message: errorsMessagee[404] });
-      res.status(500).send({ message: 'Произошла ошибка' });
+      if (err.name === 'ValidationError') {
+        next(new RequestError(errorsMessagee[400]));
+      }
+      if (err.name === 'CastError') {
+        next(new NotFoundError(errorsMessagee[404]));
+      }
+      next(err);
     });
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const owner = req.user._id;
   const { avatar } = req.body;
   User.findByIdAndUpdate(owner, { avatar },
@@ -100,31 +123,36 @@ module.exports.updateAvatar = (req, res) => {
     })
     .then((users) => res.send({ data: users }))
     .catch((err) => {
-      if (err.name === 'ValidationError') return res.status(ERROR_CODE_400).send({ message: errorsMessagee['400ava'] });
-      if (err.name === 'CastError') return res.status(ERROR_CODE_404).send({ message: errorsMessagee[404] });
-      res.status(500).send({ message: 'Произошла ошибка' });
+      if (err.name === 'ValidationError') {
+        next(new RequestError(errorsMessagee['400ava']));
+      }
+      if (err.name === 'CastError') {
+        next(new NotFoundError(errorsMessagee[404]));
+      }
+      next(err);
     });
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(400).send({ message: 'not all sent' });
+    next(new RequestError(errorsMessagee['400login']));
   }
 
-  return User.findOne({ email })
+  return User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        return res.status(403).send({ message: 'not found' });
+        next(new NotFoundError(errorsMessagee['404email']));
       }
       bcrypt.compare(password, user.password, (err, isValid) => {
         if (!isValid) {
-          return res.status(401).send({ message: 'no valid' });
+          next(new AutorizationError(errorsMessagee[401]));
         }
 
         const token = jwt.sign({ id: user.id, email }, JWT_SECRET, { expiresIn: '7d' });
 
         return res.status(200).send(token);
       });
-    });
+    })
+    .catch(next);
 };

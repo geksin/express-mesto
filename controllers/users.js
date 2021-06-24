@@ -2,10 +2,10 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
-const NotFoundError = require('../errors/errors');
-const RequestError = require('../errors/errors');
-const AutorizationError = require('../errors/errors');
-const AlreadyHaveError = require('../errors/errors');
+const NotFoundError = require('../errors/NotFoundError');
+const RequestError = require('../errors/RequestError');
+const AutorizationError = require('../errors/AutorizationError');
+const AlreadyHaveError = require('../errors/AlreadyHaveError');
 
 const JWT_SECRET = 'jdsg776599jngmmjhdg';
 
@@ -64,7 +64,11 @@ module.exports.createUser = (req, res, next) => {
       return User.create({
         name, about, avatar, password: hash, email,
       })
-        .then((newuser) => res.status(200).send({ data: newuser }));
+        .then(() => res.status(200).send({
+          data: {
+            name, about, avatar, email,
+          },
+        }));
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -151,7 +155,7 @@ module.exports.login = (req, res, next) => {
 
         const token = jwt.sign({ id: user.id, email }, JWT_SECRET, { expiresIn: '7d' });
 
-        return res.status(200).send(token);
+        return res.status(200).send({ id: user.id, token });
       });
     })
     .catch(next);

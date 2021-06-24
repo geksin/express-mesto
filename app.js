@@ -9,6 +9,7 @@ const {
 } = require('./controllers/users');
 
 const { PORT = 3000, BASE_PATH } = process.env;
+const { JWT_SECRET = 'jdsg776599jngmmjhdg' } = process.env;
 const app = express();
 
 app.use(bodyParser.json());
@@ -45,7 +46,6 @@ app.use((err, req, res, next) => {
     });
 });
 
-app.use(express.static(path.join(__dirname, 'public')));
 app.listen(PORT, () => {
   console.log('Ссылка на сервер');
   console.log(BASE_PATH);

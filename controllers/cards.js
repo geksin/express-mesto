@@ -1,6 +1,6 @@
 const Card = require('../models/card');
-const NotFoundError = require('../errors/errors');
-const RequestError = require('../errors/errors');
+const NotFoundError = require('../errors/NotFoundError');
+const RequestError = require('../errors/RequestError');
 
 const errorsMessagee = {
   400: 'Переданы некорректные данные при создании карточки',
@@ -37,7 +37,7 @@ module.exports.deleteCard = (req, res, next) => {
       if (card == null) {
         next(new NotFoundError(errorsMessagee['404del']));
       }
-      if (card.owner == req.user.id) {
+      if (card.owner.equals === req.user.id) {
         Card.findByIdAndRemove(card._id)
           .then((cards) => res.send(cards));
       } else {

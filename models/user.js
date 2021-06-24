@@ -1,10 +1,6 @@
 const mongoose = require('mongoose');
 const validat = require('validator');
 
-// const validatorUrl = function (avatar) {
-//   return /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)?/gi.test(avatar);
-// };
-
 const userSchema = new mongoose.Schema({
   name: {
     type: String,

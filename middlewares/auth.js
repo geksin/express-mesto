@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const JWT_SECRET = 'jdsg776599jngmmjhdg';
+const config = require('../config');
 const AutorizationError = require('../errors/AutorizationError');
 
 module.exports = (req, res, next) => {
@@ -13,7 +13,7 @@ module.exports = (req, res, next) => {
   let payload;
 
   try {
-    payload = jwt.verify(token, JWT_SECRET);
+    payload = jwt.verify(token, config.JWT_SECRET);
   } catch (err) {
     next(new AutorizationError('Необходима авторизация'));
   }
@@ -21,11 +21,3 @@ module.exports = (req, res, next) => {
   req.user = payload;
   next();
 };
-
-// const isAuthorized = (token) => jwt.verify(token, JWT_SECRET, { expiresIn: '7d' }, (err, data) => {
-//   if (err) {
-//     return false;
-//   }
-//   return User.findOne({ _id: data.id })
-//     .then((admin) => !!admin);
-// });

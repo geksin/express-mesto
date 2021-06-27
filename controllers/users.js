@@ -70,14 +70,14 @@ module.exports.createUser = (req, res, next) => {
           },
         }));
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
+    .catch((error) => {
+      if (error.name === 'ValidationError') {
         next(new RequestError(errorsMessagee[400]));
       }
-      if (err.name === 'CastError') {
+      if (error.name === 'CastError') {
         next(new NotFoundError(errorsMessagee[404]));
       }
-      next(err);
+      next(error);
     }));
 };
 

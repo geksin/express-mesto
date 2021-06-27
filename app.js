@@ -29,15 +29,15 @@ app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required(),
-    name: Joi.string().required().min(2).max(30),
-    about: Joi.string().required().min(2).max(30),
-    avatar: Joi.string(),
   }),
 }), login);
 app.post('/signup', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required(),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().regex(/(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/),
   }),
 }), createUser);
 
@@ -48,7 +48,7 @@ app.use('/cards', require('./routes/cards'));
 
 app.use(errors());
 
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   const { statusCode = 500, message } = err;
 
   res
@@ -61,5 +61,12 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(config.server.port, () => {
-  console.log('Ссылка на сервер');
+  // eslint-disable-next-line no-console
+  console.log(`Сервер запущен, порт ${config.server.port}`);
 });
+
+// спасибо за проверку =)
+// у меня проблемы при запуске линта: Oops! Something went wrong! :(
+// ESLint: 7.23.0
+// Failed to read JSON file at .../express-mesto/node_modules/package.json:
+// пользуюсь плагином в VS

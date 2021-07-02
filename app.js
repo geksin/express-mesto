@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { celebrate, Joi } = require('celebrate');
 const { errors } = require('celebrate');
+const cors = require('cors');
 const auth = require('./middlewares/auth');
 const config = require('./config');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
@@ -25,6 +26,27 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useUnifiedTopology: true,
   useFindAndModify: false,
 });
+
+app.use(
+  cors({
+    origin: [
+      'http://localhost:3000',
+      'https://api.sxep.nomoredomains.club/',
+      'http://api.sxep.nomoredomains.club/',
+      'http://sxep.nomoredomains.club/',
+      'https://sxep.nomoredomains.club/',
+      'http://sxep.nomoredomains.club/register',
+      'https://sxep.nomoredomains.club/register',
+      'http://sxep.nomoredomains.club/login',
+      'https://sxep.nomoredomains.club/login',
+    ],
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+    allowedHeaders: ['Content-Type', 'origin', 'Authorization'],
+    credentials: true,
+  }),
+);
 
 app.use(requestLogger);
 
@@ -69,9 +91,3 @@ app.listen(config.server.port, () => {
   // eslint-disable-next-line no-console
   console.log(`Сервер запущен, порт ${config.server.port}`);
 });
-
-// спасибо за проверку =)
-// у меня проблемы при запуске линта: Oops! Something went wrong! :(
-// ESLint: 7.23.0
-// Failed to read JSON file at .../express-mesto/node_modules/package.json:
-// пользуюсь плагином в VS

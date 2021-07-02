@@ -50,13 +50,13 @@ app.use(
 
 app.use(requestLogger);
 
-app.post('/api/signin', celebrate({
+app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required(),
   }),
 }), login);
-app.post('/api/signup', celebrate({
+app.post('/signup', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required(),
@@ -68,8 +68,8 @@ app.post('/api/signup', celebrate({
 
 app.use(auth);
 
-app.use('/api/users', require('./routes/users'));
-app.use('/api/cards', require('./routes/cards'));
+app.use('/users', require('./routes/users'));
+app.use('/cards', require('./routes/cards'));
 
 app.use(errorLogger);
 

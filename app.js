@@ -50,13 +50,13 @@ app.use(
 
 app.use(requestLogger);
 
-app.post('/signin', celebrate({
+app.post('/login', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required(),
   }),
 }), login);
-app.post('/signup', celebrate({
+app.post('/register', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required(),

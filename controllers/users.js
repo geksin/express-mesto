@@ -104,7 +104,7 @@ module.exports.updateProfile = (req, res, next) => {
       runValidators: true,
       upsert: true,
     })
-    .then((users) => res.send({ data: users }))
+    .then((users) => res.send({ users }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new RequestError(errorsMessagee[400]));
@@ -125,7 +125,7 @@ module.exports.updateAvatar = (req, res, next) => {
       runValidators: true,
       upsert: true,
     })
-    .then((users) => res.send({ data: users }))
+    .then((users) => res.send({ users }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new RequestError(errorsMessagee['400ava']));

@@ -155,7 +155,7 @@ module.exports.login = (req, res, next) => {
 
         const token = jwt.sign({ id: user.id, email }, config.JWT_SECRET, { expiresIn: '7d' });
 
-        return res.status(200).send({ id: user.id, token });
+        return res.status(200).send({ id: user.id, email, token });
       });
     })
     .catch(next);

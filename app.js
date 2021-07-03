@@ -103,7 +103,6 @@ app.listen(config.server.port, () => {
   console.log(`Сервер запущен, порт ${config.server.port}`);
 });
 
-
 // app.use(
 //   cors({
 //     origin: [

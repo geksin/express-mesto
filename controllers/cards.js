@@ -60,7 +60,7 @@ module.exports.likeCard = (req, res, next) => { // http://localhost:3000/cards/6
       if (cards === null) {
         next(new RequestError(errorsMessagee['400likes']));
       }
-      res.send({ card: cards });
+      res.send({ cards });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -78,7 +78,7 @@ module.exports.dislikeCard = (req, res, next) => Card.findByIdAndUpdate(
   if (cards === null) {
     next(new RequestError(errorsMessagee['400likes']));
   }
-  res.send({ card: cards });
+  res.send({ cards });
 })
   .catch((err) => {
     if (err.name === 'ValidationError') {

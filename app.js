@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 const { celebrate, Joi } = require('celebrate');
 const { errors } = require('celebrate');
 const cors = require('cors');
+const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
 const auth = require('./middlewares/auth');
 const config = require('./config');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
@@ -19,6 +21,10 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.use(helmet());
+app.use(bodyParser.json());
+app.use(cookieParser());
+
 // подключаемся к серверу mongo
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
@@ -27,28 +33,51 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useFindAndModify: false,
 });
 
-app.use(
-  cors({
-    origin: [
-      'http://localhost:3000',
-      'https://api.sxep.nomoredomains.club/',
-      'http://api.sxep.nomoredomains.club/',
-      'http://sxep.nomoredomains.club/',
-      'https://sxep.nomoredomains.club/',
-      'http://sxep.nomoredomains.club/register',
-      'https://sxep.nomoredomains.club/register',
-      'http://sxep.nomoredomains.club/login',
-      'https://sxep.nomoredomains.club/login',
-    ],
-    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
-    allowedHeaders: ['Content-Type', 'origin', 'Authorization'],
-    credentials: true,
-  }),
-);
+const CORS_WHITELIST = [
+  'http://localhost:3000',
+  'https://api.sxep.nomoredomains.club/',
+  'http://api.sxep.nomoredomains.club/',
+  'http://sxep.nomoredomains.club/',
+  'https://sxep.nomoredomains.club/',
+  'http://sxep.nomoredomains.club/register',
+  'https://sxep.nomoredomains.club/register',
+  'http://sxep.nomoredomains.club/login',
+  'https://sxep.nomoredomains.club/login',
+];
+const corsOption = {
+  credentials: true,
+  origin: function checkCorsList(origin, callback) {
+    if (CORS_WHITELIST.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+};
+
+// app.use(
+//   cors({
+//     origin: [
+//       'http://localhost:3000',
+//       'https://api.sxep.nomoredomains.club/',
+//       'http://api.sxep.nomoredomains.club/',
+//       'http://sxep.nomoredomains.club/',
+//       'https://sxep.nomoredomains.club/',
+//       'http://sxep.nomoredomains.club/register',
+//       'https://sxep.nomoredomains.club/register',
+//       'http://sxep.nomoredomains.club/login',
+//       'https://sxep.nomoredomains.club/login',
+//     ],
+//     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+//     preflightContinue: false,
+//     optionsSuccessStatus: 204,
+//     allowedHeaders: ['Content-Type', 'origin', 'Authorization'],
+//     credentials: true,
+//   }),
+// );
 
 app.use(requestLogger);
+app.use(cors(corsOption));
 
 app.post('/login', celebrate({
   body: Joi.object().keys({
@@ -91,3 +120,31 @@ app.listen(config.server.port, () => {
   // eslint-disable-next-line no-console
   console.log(`Сервер запущен, порт ${config.server.port}`);
 });
+
+// const CORS_WHITELIST = [
+//   'http://localhost:3000',
+//   'https://mesto.qwerty271.nomoredomains.club',
+//   'http://mesto.qwerty271.nomoredomains.club',
+// ];
+// const corsOption = {
+//   credentials: true,
+//   origin: function checkCorsList(origin, callback) {
+//     if (CORS_WHITELIST.indexOf(origin) !== -1 || !origin) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error('Not allowed by CORS'));
+//     }
+//   },
+// };
+// app.use(helmet());
+// app.use(bodyParser.json());
+// app.use(cookieParser());
+
+// mongoose.connect('mongodb://localhost:27017/mestodb', {
+//   useNewUrlParser: true,
+//   useCreateIndex: true,
+//   useFindAndModify: false,
+//   useUnifiedTopology: true,
+// });
+// app.use(requestLogger);
+// app.use(cors(corsOption));

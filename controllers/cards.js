@@ -39,7 +39,7 @@ module.exports.deleteCard = (req, res, next) => {
       }
       if (card.owner.equals(req.user.id)) {
         Card.findByIdAndRemove(card._id)
-          .then((cards) => res.send(cards));
+          .then((cards) => res.send({ cards }));
       } else {
         next(new RequestError(errorsMessagee['403del']));
       }

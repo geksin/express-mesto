@@ -12,7 +12,7 @@ const errorsMessagee = {
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
-    .then((cards) => res.send({cards }))
+    .then((cards) => res.send({ cards }))
     .catch(next);
 };
 
@@ -21,7 +21,7 @@ module.exports.createCard = (req, res, next) => {
   const owner = req.user.id;
   Card.create({ name, link, owner })
     .then((card) => {
-      res.send({ data: card });
+      res.send({ card });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -60,7 +60,7 @@ module.exports.likeCard = (req, res, next) => { // http://localhost:3000/cards/6
       if (cards === null) {
         next(new RequestError(errorsMessagee['400likes']));
       }
-      res.send({ data: cards });
+      res.send({ cards });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -78,7 +78,7 @@ module.exports.dislikeCard = (req, res, next) => Card.findByIdAndUpdate(
   if (cards === null) {
     next(new RequestError(errorsMessagee['400likes']));
   }
-  res.send({ data: cards });
+  res.send({ cards });
 })
   .catch((err) => {
     if (err.name === 'ValidationError') {

@@ -35,15 +35,11 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 
 const CORS_WHITELIST = [
   'http://localhost:3000',
+  'http://localhost:3001',
   'https://api.sxep.nomoredomains.club',
   'http://api.sxep.nomoredomains.club',
   'http://sxep.nomoredomains.club',
   'https://sxep.nomoredomains.club',
-  'http://sxep.nomoredomains.club/register',
-  'https://sxep.nomoredomains.club/register',
-  'http://sxep.nomoredomains.club/login',
-  'https://api.sxep.nomoredomains.club/users/me',
-  'https://sxep.nomoredomains.club/login',
 ];
 const corsOption = {
   credentials: true,
@@ -55,27 +51,6 @@ const corsOption = {
     }
   },
 };
-
-// app.use(
-//   cors({
-//     origin: [
-//       'http://localhost:3000',
-//       'https://api.sxep.nomoredomains.club/',
-//       'http://api.sxep.nomoredomains.club/',
-//       'http://sxep.nomoredomains.club/',
-//       'https://sxep.nomoredomains.club/',
-//       'http://sxep.nomoredomains.club/register',
-//       'https://sxep.nomoredomains.club/register',
-//       'http://sxep.nomoredomains.club/login',
-//       'https://sxep.nomoredomains.club/login',
-//     ],
-//     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-//     preflightContinue: false,
-//     optionsSuccessStatus: 204,
-//     allowedHeaders: ['Content-Type', 'origin', 'Authorization'],
-//     credentials: true,
-//   }),
-// );
 
 app.use(requestLogger);
 app.use(cors(corsOption));
@@ -121,3 +96,25 @@ app.listen(config.server.port, () => {
   // eslint-disable-next-line no-console
   console.log(`Сервер запущен, порт ${config.server.port}`);
 });
+
+
+// app.use(
+//   cors({
+//     origin: [
+//       'http://localhost:3000',
+//       'https://api.sxep.nomoredomains.club/',
+//       'http://api.sxep.nomoredomains.club/',
+//       'http://sxep.nomoredomains.club/',
+//       'https://sxep.nomoredomains.club/',
+//       'http://sxep.nomoredomains.club/register',
+//       'https://sxep.nomoredomains.club/register',
+//       'http://sxep.nomoredomains.club/login',
+//       'https://sxep.nomoredomains.club/login',
+//     ],
+//     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+//     preflightContinue: false,
+//     optionsSuccessStatus: 204,
+//     allowedHeaders: ['Content-Type', 'origin', 'Authorization'],
+//     credentials: true,
+//   }),
+// );

@@ -56,11 +56,11 @@ module.exports.likeCard = (req, res, next) => { // http://localhost:3000/cards/6
   Card.findByIdAndUpdate(req.params.cardId,
     { $addToSet: { likes: req.user.id } }, // добавить _id в массив, если его там нет
     { new: true })
-    .then((cards) => {
-      if (cards === null) {
+    .then((card) => {
+      if (card === null) {
         next(new RequestError(errorsMessagee['400likes']));
       }
-      res.send({ cards });
+      res.send({ cards: card });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {

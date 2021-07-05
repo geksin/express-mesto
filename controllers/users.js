@@ -16,7 +16,7 @@ const errorsMessagee = {
   '400ava': 'Переданы некорректные данные при обновлении аватара',
   401: 'Логин или пароль не правильные',
   404: 'Пользователь по указанному _id не найден',
-  '404email': 'Пользователь с такой почтой не найден',
+  '401email': 'Пользователь с такой почтой не найден',
   409: 'Пользователь c такой почтой уже существует',
 };
 
@@ -146,7 +146,7 @@ module.exports.login = (req, res, next) => {
   return User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        next(new NotFoundError(errorsMessagee['404email']));
+        next(new AutorizationError(errorsMessagee['401email']));
       }
       bcrypt.compare(password, user.password, (err, isValid) => {
         if (!isValid) {
